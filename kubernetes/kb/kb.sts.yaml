@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kb-prod
+  labels:
+    run: kb-prod
+spec:
+  selector:
+    matchLabels:
+      run: kb-prod
+  template:
+    metadata:
+      generateName: kb-prod
+      labels:
+        run: kb-prod
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: kb-prod
+          image: kanboard/kanboard:v1.2.9
+          # imagePullPolicy: Always
+          ports:
+            - name: kb-prod
+              containerPort: 80
+
+          volumeMounts:
+          - mountPath: "/var/www/app/data"
+            name: kanboard-data
+          - mountPath: "/var/www/app/plugins"
+            name: kanboard-plugins
+          - mountPath: "/etc/nginx/ssl"
+            name: kanboard-ssl
+
+  volumeClaimTemplates:
+   - metadata:
+       name: kanboard-data
+     spec:
+       accessModes: [ "ReadWriteOnce" ]
+       #storageClassName: "openebs-standalone"
+       resources:
+         requests:
+           storage: 128Mi
+
+   - metadata:
+       name: kanboard-plugins
+     spec:
+       accessModes: [ "ReadWriteOnce" ]
+       #storageClassName: "openebs-standalone"
+       resources:
+         requests:
+           storage: 128Mi
+
+   - metadata:
+       name: kanboard-ssl
+     spec:
+       accessModes: [ "ReadWriteOnce" ]
+       #storageClassName: "openebs-standalone"
+       resources:
+         requests:
+           storage: 128Mi

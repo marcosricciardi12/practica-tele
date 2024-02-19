@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mstream
+  labels:
+    run: mstream
+spec:
+  ports:
+  - port: 3000
+    name: mstream
+  selector:
+    run: mstream
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mstream-app
+  labels:
+    run: mstream
+spec:
+  selector:
+    matchLabels:
+      run: mstream
+  serviceName: "mstream"
+  template:
+    metadata:
+      generateName: mstream-app
+      labels:
+        run: mstream
+    spec:
+      containers:
+        - name: mstream-app
+          image: lscr.io/linuxserver/mstream:latest
+          # imagePullPolicy: Always
+          env:
+            - name: PUID
+              valueFrom:
+                configMapKeyRef:
+                  name: mstream-app
+                  key: PUID
+            - name: PGID
+              valueFrom:
+                configMapKeyRef:
+                  name: mstream-app
+                  key: PGID
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: mstream-app
+                  key: TZ
+          ports:
+            - name: app-mstream
+              containerPort: 3000
+          volumeMounts:
+            - mountPath: "/music"
+              name: mstream-music
+            - mountPath: "/config"
+              name: mstream-config
+
+      volumes:
+        # - name: secret-volume
+        #   secret:
+        #     secretName: db-secret
+        - configMap: 
+            name: mstream-app
+          name: env-mstream-app
+
+  volumeClaimTemplates:
+   - metadata:
+       name: mstream-music
+     spec:
+       accessModes: [ "ReadWriteOnce" ]
+       #storageClassName: "openebs-standalone"
+       resources:
+         requests:
+           storage: 1Gi
+
+   - metadata:
+       name: mstream-config
+     spec:
+       accessModes: [ "ReadWriteOnce" ]
+       #storageClassName: "openebs-standalone"
+       resources:
+         requests:
+           storage: 128Mi

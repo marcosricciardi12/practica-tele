@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    spec.ingressClassName: nginx
+  name: mstream-ing
+spec:
+  rules:
+  - host: morsaricc12.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: mstream
+            port:
+              number: 3000
+        path: /
+        pathType: Prefix

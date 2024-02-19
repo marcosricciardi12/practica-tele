@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    spec.ingressClassName: nginx
+  name: kb-ing
+spec:
+  rules:
+  - host: morsaricc12.local
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: kb-prod
+            port:
+              number: 80
+        pathType: Prefix
